@@ -58,7 +58,19 @@ class TaskList extends Component
 
         //Recargar las tareas
         $this->loadTasks();
+    }
 
+    //Cambiar estado de la tarea
+    public function toggleTaskStatus (int $taskId)
+    {
+        $task = Task::find($taskId);
+
+        if ($task) {
+            $task->is_completed = !$task->is_completed; //Invertir estado actual
+            $task->save();
+            $this->loadTasks(); //Recargar las tareas
+        
+        }
     }
 
      // Devolver la vista del componente
