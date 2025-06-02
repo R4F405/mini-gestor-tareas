@@ -15,6 +15,8 @@ class TaskList extends Component
     public ?string $newCategoryId = null; // Input de la nueva categoría de la tarea (Opcional y nulleable)
     public Collection $categories; //Almacenar las categorías disponibles
 
+    public ?Task $selectedTask = null; // Para almacenar la tarea seleccionada
+
     // Se ejecuta cuando se inicializa
     public function mount()
     {
@@ -73,10 +75,21 @@ class TaskList extends Component
         }
     }
 
+    // Seleccionar una tarea y mostrar sus detalles
+    public function selectTask(int $taskId)
+    {
+        $this->selectedTask = Task::with('category')->find($taskId);
+    }
+
+    // Cerrar el panel de detalles
+    public function closeTaskDetails()
+    {
+        $this->selectedTask = null;
+    }
+
      // Devolver la vista del componente
     public function render()
     {
         return view('livewire.task-list');
     }
-
 }
