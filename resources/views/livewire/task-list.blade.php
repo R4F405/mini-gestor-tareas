@@ -1,4 +1,36 @@
 <div>
+    {{-- Formulario para añadir nueva tarea --}}
+    <form wire:submit.prevent="addTask" class="mb-6 p-4 bg-gray-100 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Añadir Nueva Tarea</h3>
+        <div class="flex flex-wrap -mx-2">
+            <div class="w-full md:w-1/2 px-2 mb-4 md:mb-0">
+                <label for="newTitle" class="block text-sm font-medium text-gray-700">Título <span class="text-red-500">*</span></label>
+                <input type="text" wire:model.defer="newTitle" id="newTitle"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                       placeholder="Ej: Comprar leche">
+                @error('newTitle') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            </div>
+            <div class="w-full md:w-1/2 px-2">
+                <label for="newCategoryId" class="block text-sm font-medium text-gray-700">Categoría (Opcional)</label>
+                <select wire:model.defer="newCategoryId" id="newCategoryId"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    <option value="">Sin categoría</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+                @error('newCategoryId') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            </div>
+        </div>
+        <div class="mt-4">
+            <button type="submit"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring focus:ring-blue-200 disabled:opacity-25 transition">
+                Añadir Tarea
+            </button>
+        </div>
+    </form>
+
+    {{-- Listado de tareas --}}
     @if($tasks->count())
         <ul class="space-y-2">
             @foreach ($tasks as $task)
@@ -22,6 +54,6 @@
             @endforeach
         </ul>
     @else
-        <p class="text-gray-700">No hay tareas registradas todavía.</p>
+        <p class="text-gray-700">No hay tareas registradas todavía. ¡Añade una nueva!</p>
     @endif
 </div>
