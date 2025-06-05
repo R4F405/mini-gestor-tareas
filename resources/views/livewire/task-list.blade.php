@@ -1,5 +1,5 @@
-<div class="flex flex-col md:flex-row md:space-x-6">
-    <div class="w-full {{ $selectedTask ? 'md:w-2/3' : 'md:w-full' }} transition-all duration-300 ease-in-out">
+<div class="grid grid-cols-1 md:grid-cols-3 md:gap-x-6">
+    <div class="w-full md:col-span-2">
         {{-- Formulario para añadir nueva tarea  --}}
         <form wire:submit.prevent="addTask" class="mb-6 p-4 bg-gray-50 rounded-lg shadow">
             <h3 class="text-lg font-semibold mb-2">Añadir Nueva Tarea</h3>
@@ -77,7 +77,7 @@
 
     {{-- Detalles de la Tarea --}}
     @if ($selectedTask)
-        <div class="w-full md:w-1/3 mt-6 md:mt-0 p-4 bg-white shadow rounded-lg" x-data="{ show: @json($selectedTask != null) }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform md:translate-x-4" x-transition:enter-end="opacity-100 transform md:translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform md:translate-x-0" x-transition:leave-end="opacity-0 transform md:translate-x-4">
+        <div class="w-full md:col-span-1 mt-6 md:mt-0 p-4 bg-white shadow rounded-lg" x-data="{ show: @json($selectedTask != null) }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform md:translate-x-4" x-transition:enter-end="opacity-100 transform md:translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform md:translate-x-0" x-transition:leave-end="opacity-0 transform md:translate-x-4">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold">Detalles de la Tarea</h3>
                 <button wire:click="closeTaskDetails" class="text-gray-500 hover:text-gray-700">
@@ -113,7 +113,7 @@
         </div>
     @else
         {{-- Opcional: Mostrar un placeholder si no hay tarea seleccionada y la columna debe existir --}}
-         <div class="w-full md:w-1/3 mt-6 md:mt-0 p-4 bg-white shadow rounded-lg text-gray-400 italic hidden md:block">
+        <div class="w-full md:col-span-1 mt-6 md:mt-0 p-4 bg-white shadow rounded-lg text-gray-400 italic hidden md:block">
             Selecciona una tarea para ver sus detalles.
         </div>
     @endif
