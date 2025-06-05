@@ -6,7 +6,6 @@
     <title>Mini Gestor de Tareas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     @livewireStyles
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="font-sans antialiased bg-gray-100">
     <div class="container mx-auto mt-5 p-4">

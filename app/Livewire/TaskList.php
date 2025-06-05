@@ -17,6 +17,11 @@ class TaskList extends Component
 
     public ?Task $selectedTask = null; // Para almacenar la tarea seleccionada
 
+    // Propiedades para el modal de eliminación
+    public bool $showDeleteModal = false;
+    public ?int $taskToDeleteId = null;
+    public string $taskToDeleteTitle = '';
+
     // Se ejecuta cuando se inicializa
     public function mount()
     {
@@ -34,7 +39,6 @@ class TaskList extends Component
     public function loadCategories()
     {
         $this->categories = Category::orderBy('name')->get();
-
     }
 
     //Crear una nueva tarea
@@ -71,7 +75,6 @@ class TaskList extends Component
             $task->is_completed = !$task->is_completed; //Invertir estado actual
             $task->save();
             $this->loadTasks(); //Recargar las tareas
-        
         }
     }
 
@@ -85,6 +88,42 @@ class TaskList extends Component
     public function closeTaskDetails()
     {
         $this->selectedTask = null;
+    }
+
+    // Abrir modal de confirmación de eliminación
+    public function openDeleteModal(int $taskId)
+    {
+        $task = Task::find($taskId);
+        if ($task) {
+            $this->taskToDeleteId = $taskId;
+            $this->taskToDeleteTitle = $task->title;
+            $this->showDeleteModal = true;
+        }
+    }
+
+    // Cerrar modal de confirmación de eliminación
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->taskToDeleteId = null;
+        $this->taskToDeleteTitle = '';
+    }
+
+    // Eliminar la tarea
+    public function deleteTask()
+    {
+        if ($this->taskToDeleteId) {
+            $task = Task::find($this->taskToDeleteId);
+            if ($task) {
+                // Si la tarea a eliminar es la que está seleccionada para ver detalles, la deseleccionamos
+                if ($this->selectedTask && $this->selectedTask->id === $this->taskToDeleteId) {
+                    $this->selectedTask = null;
+                }
+                $task->delete();
+                $this->loadTasks(); // Recargar la lista de tareas
+            }
+            $this->closeDeleteModal(); // Cerrar el modal después de eliminar
+        }
     }
 
      // Devolver la vista del componente

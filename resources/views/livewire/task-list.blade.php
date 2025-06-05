@@ -57,15 +57,37 @@
                                 @endif
                             </div>
                         </div>
-                        <div class="flex items-center ml-4">
+                        <div class="flex items-center ml-4 space-x-2">
                             <span class="text-sm {{ $task->is_completed ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold' }}">
                                 {{ $task->is_completed ? 'Completada' : 'Pendiente' }} {{-- Estado de la tarea --}}
                             </span>
                             {{-- Icono ojo para ver detalles --}}
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400 ml-2">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
+                            {{-- Menú de tres puntos --}}
+                            <div x-data="{ open: false }" class="relative">
+                                <button @click="open = !open" @click.away="open = false" class="text-gray-500 hover:text-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+                                    </svg>
+                                </button>
+                                <div x-show="open" 
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="opacity-0 transform scale-95"
+                                     x-transition:enter-end="opacity-100 transform scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="opacity-100 transform scale-100"
+                                     x-transition:leave-end="opacity-0 transform scale-95"
+                                     class="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1"
+                                     style="display: none;">
+                                    <button wire:click.stop="openDeleteModal({{ $task->id }})" 
+                                            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700">
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </li>
                 @endforeach
@@ -112,9 +134,44 @@
             </div>
         </div>
     @else
-        {{-- Opcional: Mostrar un placeholder si no hay tarea seleccionada y la columna debe existir --}}
-        <div class="w-full md:col-span-1 mt-6 md:mt-0 p-4 bg-white shadow rounded-lg text-gray-400 italic hidden md:block">
+        {{-- Mostrar un placeholder si no hay tarea seleccionada --}}
+         <div class="w-full md:col-span-1 mt-6 md:mt-0 p-4 bg-white shadow rounded-lg text-gray-400 italic hidden md:block">
             Selecciona una tarea para ver sus detalles.
         </div>
+    @endif
+
+    {{-- Modal de Confirmacion de Eliminacion --}}
+    @if ($showDeleteModal)
+    <div x-data="{ showModal: @entangle('showDeleteModal') }"
+         x-show="showModal"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity flex items-center justify-center z-50 p-4"
+         style="display: none;" {{-- Alpine controlará la visualizacion --}}
+         @keydown.escape.window="showModal = false; $wire.closeDeleteModal()" {{-- Cerrar con Escape --}}
+         >
+        <div @click.away="showModal = false; $wire.closeDeleteModal()" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">¿Estás seguro que deseas eliminar?</h3>
+            <div class="mt-2 mb-4">
+                <p class="text-sm text-gray-600">Estás a punto de eliminar la tarea:</p>
+                <p class="text-sm text-gray-800 font-medium mt-1">• {{ $taskToDeleteTitle }}</p>
+            </div>
+            <div class="mt-5 sm:mt-6 flex flex-col sm:flex-row-reverse sm:space-x-3 sm:space-x-reverse">
+                <button wire:click="deleteTask" type="button"
+                        class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                    Eliminar
+                </button>
+                <button wire:click="closeDeleteModal" type="button"
+                        @click="showModal = false"
+                        class="mt-3 w-full sm:mt-0 sm:w-auto inline-flex justify-center rounded-md border border-blue-600 shadow-sm px-4 py-2 bg-white text-base font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
     @endif
 </div>
