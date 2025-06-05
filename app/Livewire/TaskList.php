@@ -22,6 +22,12 @@ class TaskList extends Component
     public ?int $taskToDeleteId = null;
     public string $taskToDeleteTitle = '';
 
+    // Propiedades para el modal de edición
+    public bool $showEditModal = false;
+    public ?int $editingTaskId = null;
+    public string $editingTaskTitle = '';
+    public ?string $editingTaskDescription = ''; // La descripción puede ser null
+
     // Se ejecuta cuando se inicializa
     public function mount()
     {
@@ -123,6 +129,53 @@ class TaskList extends Component
                 $this->loadTasks(); // Recargar la lista de tareas
             }
             $this->closeDeleteModal(); // Cerrar el modal después de eliminar
+        }
+    }
+
+    // Abrir modal de edición
+    public function openEditModal(int $taskId)
+    {
+        $task = Task::find($taskId);
+        if ($task) {
+            $this->editingTaskId = $task->id;
+            $this->editingTaskTitle = $task->title;
+            $this->editingTaskDescription = $task->description;
+            $this->showEditModal = true;
+        }
+    }
+
+    // Cerrar modal de edición
+    public function closeEditModal()
+    {
+        $this->showEditModal = false;
+        $this->editingTaskId = null;
+        $this->editingTaskTitle = '';
+        $this->editingTaskDescription = '';
+    }
+
+    // Actualizar la tarea
+    public function updateTask()
+    {
+        $validatedData = $this->validate([
+            'editingTaskTitle' => 'required|string|min:3|max:255',
+            'editingTaskDescription' => 'nullable|string|max:1000',
+        ]);
+
+        if ($this->editingTaskId) {
+            $task = Task::find($this->editingTaskId);
+            if ($task) {
+                $task->title = $validatedData['editingTaskTitle'];
+                $task->description = $validatedData['editingTaskDescription'];
+                $task->save();
+
+                // Si la tarea editada es la que se está mostrando en detalles, actualiza los detalles
+                if ($this->selectedTask && $this->selectedTask->id === $this->editingTaskId) {
+                    $this->selectTask($this->editingTaskId); // Vuelve a cargarla para reflejar cambios
+                }
+
+                $this->loadTasks();
+                $this->closeEditModal();
+            }
         }
     }
 
