@@ -8,12 +8,8 @@
     @livewireStyles
 </head>
 <body class="font-sans antialiased bg-gray-100">
-    <div class="container mx-auto mt-5 p-4">
-        <div class="flex flex-col md:flex-row md:space-x-6">
-            <div class="w-full md:w-2/3">
-                @livewire('task-list')
-            </div>
-        </div>
+    <div class="container mx-auto mt-10 p-4">
+        @livewire('task-list')
     </div>
     @livewireScripts
 </body>

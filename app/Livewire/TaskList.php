@@ -6,6 +6,7 @@ use App\Models\Category;
 use Livewire\Component;
 use App\Models\Task;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\On;
 
 class TaskList extends Component
 {
@@ -186,5 +187,12 @@ class TaskList extends Component
             'tasks' => $tasks,
             'categories' => $this->categories // Se pasan las categorias a la vista
         ]);
+    }
+
+    // Evento para refrescar las categorias
+    #[On('category-updated')]
+    public function refreshCategories()
+    {
+        $this->loadCategories();
     }
 }
