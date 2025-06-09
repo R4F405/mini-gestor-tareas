@@ -12,7 +12,6 @@ class TaskList extends Component
 {
     // Propiedades para el modal de creacion
     public string $newTitle = "";
-    public ?string $newCategoryId = null;
     public Collection $categories;
 
     public ?Task $selectedTask = null;
@@ -48,17 +47,15 @@ class TaskList extends Component
     {
         $this->validate([
             'newTitle' => 'required|string|min:3|max:255',
-            'newCategoryId' => 'nullable|integer|exists:categories,id'
         ]);
 
         $task = new Task();
         $task->title = $this->newTitle;
         $task->description = null;
-        $task->category_id = $this->newCategoryId;
         $task->is_completed = false;
         $task->save();
 
-        $this->reset(['newTitle', 'newCategoryId']);
+        $this->reset('newTitle');
 
     }
 

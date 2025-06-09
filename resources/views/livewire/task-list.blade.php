@@ -2,58 +2,52 @@
     <div class="grid grid-cols-1 md:grid-cols-3 md:gap-x-6">
         {{-- Columna Izquierda: Formulario, Filtros y Lista de Tareas --}}
         <div class="w-full md:col-span-2">
-            {{-- Formulario para añadir nueva tarea --}}
-            <form wire:submit.prevent="addTask" class="mb-6 p-6 bg-white rounded-lg shadow">
-                <h3 class="text-xl font-semibold mb-4">Añadir Nueva Tarea</h3>
-                <div class="flex flex-wrap -mx-3">
-                    <div class="w-full md:w-1/2 px-3 mb-4 md:mb-0">
-                        <label for="newTitle" class="block text-sm font-medium text-gray-700">Título <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model.defer="newTitle" id="newTitle"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                               placeholder="Ej: Comprar leche">
-                        @error('newTitle') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="w-full md:w-1/2 px-3">
-                        <label for="newCategoryId" class="block text-sm font-medium text-gray-700">Categoría (Opcional)</label>
-                        <select wire:model.defer="newCategoryId" id="newCategoryId"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            <option value="">Sin categoría</option>
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('newCategoryId') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </div>
+
+            {{-- NUEVO: Formulario simplificado para añadir tarea --}}
+            <form wire:submit.prevent="addTask" class="mb-6">
+                <div class="relative">
+                    <input type="text" wire:model.defer="newTitle"
+                           class="w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Añadir una Tarea...">
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    </span>
                 </div>
-                <div class="mt-6">
-                    <button type="submit"
-                            class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring focus:ring-blue-200 disabled:opacity-25 transition">
-                        Añadir Tarea
+                @error('newTitle') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            </form>
+
+            {{-- Filtros y Barra de Búsqueda --}}
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
+                {{-- Filtros --}}
+                <div class="flex items-center space-x-4 border-b pb-2">
+                    <button wire:click="setFilter('all')" class="text-sm font-medium {{ $filter === 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
+                        Todas
+                    </button>
+                    <button wire:click="setFilter('pending')" class="text-sm font-medium {{ $filter === 'pending' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
+                        Pendientes
+                    </button>
+                    <button wire:click="setFilter('completed')" class="text-sm font-medium {{ $filter === 'completed' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
+                        Completadas
                     </button>
                 </div>
-            </form>
-            {{-- Filtros de tareas --}}
-            <div class="mb-4 flex items-center space-x-4 border-b pb-2">
-                <button wire:click="setFilter('all')"
-                        class="text-sm font-medium {{ $filter === 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
-                    Todas
-                </button>
-                <button wire:click="setFilter('pending')"
-                        class="text-sm font-medium {{ $filter === 'pending' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
-                    Pendientes
-                </button>
-                <button wire:click="setFilter('completed')"
-                        class="text-sm font-medium {{ $filter === 'completed' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
-                    Completadas
-                </button>
+                {{-- NUEVO: Barra de Búsqueda --}}
+                <div class="relative w-full sm:w-auto">
+                     <input type="text"
+                           class="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Buscar tarea...">
+                     <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                     </span>
+                </div>
             </div>
+
             {{-- Lista de Tareas --}}
             @if($tasks->count())
                 <ul class="space-y-3">
                     @foreach ($tasks as $task)
-                        <li wire:key="task-{{ $task->id }}" wire:click="selectTask({{ $task->id }})"
-                            class="p-4 bg-white shadow rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-50 {{ $selectedTask && $selectedTask->id === $task->id ? 'ring-2 ring-blue-500' : '' }}">
+                        <li wire:key="task-{{ $task->id }}" class="p-4 bg-white shadow rounded-lg flex justify-between items-center {{ $selectedTask && $selectedTask->id === $task->id ? 'ring-2 ring-blue-500' : '' }}">
                             <div class="flex items-center flex-grow">
+                                {{-- Checkbox para completar tarea --}}
                                 <input type="checkbox"
                                        id="task-{{ $task->id }}"
                                        wire:click.stop="toggleTaskStatus({{ $task->id }})"
@@ -64,41 +58,27 @@
                                         {{ $task->title }}
                                     </span>
                                     @if ($task->category)
-                                        <span class="ml-2 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-blue-200 text-blue-700 rounded-full">
+                                        <span class="ml-2 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-red-200 text-red-700 rounded-full">
                                             {{ $task->category->name }}
                                         </span>
                                     @endif
                                 </div>
                             </div>
+                             {{-- NUEVO: Iconos de acciones --}}
                             <div class="flex items-center ml-4 space-x-2">
-                                <span class="text-sm {{ $task->is_completed ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold' }}">
-                                    {{ $task->is_completed ? 'Completada' : 'Pendiente' }}
-                                </span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                </svg>
+                                <button wire:click="selectTask({{ $task->id }})" class="text-gray-400 hover:text-gray-600">
+                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+
                                 <div x-data="{ open: false }" class="relative">
                                     <button @click="open = !open" @click.away="open = false" class="text-gray-500 hover:text-gray-700">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
-                                        </svg>
+                                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
                                     </button>
-                                    <div x-show="open" 
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="opacity-0 transform scale-95"
-                                         x-transition:enter-end="opacity-100 transform scale-100"
-                                         x-transition:leave="transition ease-in duration-75"
-                                         x-transition:leave-start="opacity-100 transform scale-100"
-                                         x-transition:leave-end="opacity-0 transform scale-95"
-                                         class="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1"
-                                         style="display: none;">
-                                        <button wire:click.stop="openEditModal({{ $task->id }})"
-                                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    <div x-show="open" x-transition class="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1" style="display: none;">
+                                        <button wire:click.stop="openEditModal({{ $task->id }})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                             Editar
                                         </button>
-                                        <button wire:click.stop="openDeleteModal({{ $task->id }})" 
-                                                class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700">
+                                        <button wire:click.stop="openDeleteModal({{ $task->id }})" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                                             Eliminar
                                         </button>
                                     </div>
@@ -114,17 +94,17 @@
             @endif
         </div>
 
-        {{-- Columna Derecha: Crear Categoria, Lista de Categorías, Exportar y Detalles de la Tarea --}}
+        {{-- Columna Derecha: se mantiene igual por ahora --}}
         <div class="w-full md:col-span-1 mt-6 md:mt-0 space-y-6">
             @livewire('category-manager')
 
             <div class="p-4 bg-white shadow rounded-lg">
                 <h3 class="text-lg font-semibold mb-3">Exportar</h3>
                 <div class="flex space-x-2">
-                    <button class="w-full text-center px-4 py-2 bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
+                    <button class="w-full text-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500">
                         Exportar PDF
                     </button>
-                    <button class="w-full text-center px-4 py-2 bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
+                    <button class="w-full text-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500">
                         Exportar CSV
                     </button>
                 </div>
@@ -132,13 +112,11 @@
 
             {{-- Detalles de la Tarea --}}
             @if ($selectedTask)
-                <div class="p-4 bg-white shadow rounded-lg" x-data="{ show: @json($selectedTask != null) }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform md:translate-x-4" x-transition:enter-end="opacity-100 transform md:translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform md:translate-x-0" x-transition:leave-end="opacity-0 transform md:translate-x-4">
+                <div class="p-4 bg-white shadow rounded-lg">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Detalles de la Tarea</h3>
                         <button wire:click="closeTaskDetails" class="text-gray-500 hover:text-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
                     </div>
                     <div>
