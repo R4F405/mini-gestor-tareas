@@ -34,11 +34,27 @@
             </div>
         </form>
 
+        {{-- Filtros de tareas --}}
+        <div class="mb-4 flex items-center space-x-4 border-b pb-2">
+            <button wire:click="setFilter('all')"
+                    class="text-sm font-medium {{ $filter === 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
+                Todas
+            </button>
+            <button wire:click="setFilter('pending')"
+                    class="text-sm font-medium {{ $filter === 'pending' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
+                Pendientes
+            </button>
+            <button wire:click="setFilter('completed')"
+                    class="text-sm font-medium {{ $filter === 'completed' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
+                Completadas
+            </button>
+        </div>
+
         {{-- Listado de tareas --}}
         @if($tasks->count())
             <ul class="space-y-2">
                 @foreach ($tasks as $task)
-                    <li wire:click="selectTask({{ $task->id }})"
+                    <li wire:key="task-{{ $task->id }}" wire:click="selectTask({{ $task->id }})"
                         class="p-4 bg-white shadow rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-50 {{ $selectedTask && $selectedTask->id === $task->id ? 'ring-2 ring-blue-500' : '' }}">
                         <div class="flex items-center flex-grow">
                             <input type="checkbox"
@@ -97,7 +113,7 @@
                 @endforeach
             </ul>
         @else
-            <p class="text-gray-700">No hay tareas registradas todavía. ¡Añade una nueva!</p>
+            <p class="text-gray-700">No hay tareas que coincidan con el filtro. ¡Añade una nueva!</p>
         @endif
     </div>
 

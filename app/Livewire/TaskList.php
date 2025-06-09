@@ -9,39 +9,34 @@ use Illuminate\Support\Collection;
 
 class TaskList extends Component
 {
-    public $tasks; // Array para almacenar las tareas
+    // Propiedades para el modal de creacion
+    public string $newTitle = "";
+    public ?string $newCategoryId = null;
+    public Collection $categories;
 
-    public string $newTitle = ""; //Input del nuevo titulo de la tarea
-    public ?string $newCategoryId = null; // Input de la nueva categoría de la tarea (Opcional y nulleable)
-    public Collection $categories; //Almacenar las categorías disponibles
+    public ?Task $selectedTask = null;
 
-    public ?Task $selectedTask = null; // Para almacenar la tarea seleccionada
-
-    // Propiedades para el modal de eliminación
+    // Propiedades para el modal de eliminacion
     public bool $showDeleteModal = false;
     public ?int $taskToDeleteId = null;
     public string $taskToDeleteTitle = '';
 
-    // Propiedades para el modal de edición
+    // Propiedades para el modal de edicion
     public bool $showEditModal = false;
     public ?int $editingTaskId = null;
     public string $editingTaskTitle = '';
-    public ?string $editingTaskDescription = ''; // La descripción puede ser null
+    public ?string $editingTaskDescription = '';
 
-    // Se ejecuta cuando se inicializa
+    // Propiedad para el filtro
+    public string $filter = 'all';
+
+    // Se ejecuta cuando se inicializa para cargar las categorías una sola vez
     public function mount()
     {
-        $this->loadTasks();
         $this->loadCategories();
     }
 
-    // Obtener todas las tareas
-    public function loadTasks()
-    {
-        $this->tasks = Task::with('category')->latest()->get();
-    }
-
-    //Obtener todas las categorias
+    // Carga las categorias
     public function loadCategories()
     {
         $this->categories = Category::orderBy('name')->get();
@@ -50,37 +45,30 @@ class TaskList extends Component
     //Crear una nueva tarea
     public function addTask()
     {
-        //Validar datos antes de crear la tarea
         $this->validate([
-            'newTitle' => 'required|string|min:3|max:255', // Titulo obligatorio
-            'newCategoryId' => 'nullable|integer|exists:categories,id' //Categoria opcional
+            'newTitle' => 'required|string|min:3|max:255',
+            'newCategoryId' => 'nullable|integer|exists:categories,id'
         ]);
 
-        //Creacion de la nueva tarea
         $task = new Task();
         $task->title = $this->newTitle;
         $task->description = null;
         $task->category_id = $this->newCategoryId;
         $task->is_completed = false;
-
         $task->save();
 
-        //Limpiar campos
         $this->reset(['newTitle', 'newCategoryId']);
 
-        //Recargar las tareas
-        $this->loadTasks();
     }
 
     //Cambiar estado de la tarea
-    public function toggleTaskStatus (int $taskId)
+    public function toggleTaskStatus(int $taskId)
     {
         $task = Task::find($taskId);
 
         if ($task) {
-            $task->is_completed = !$task->is_completed; //Invertir estado actual
+            $task->is_completed = !$task->is_completed;
             $task->save();
-            $this->loadTasks(); //Recargar las tareas
         }
     }
 
@@ -96,7 +84,7 @@ class TaskList extends Component
         $this->selectedTask = null;
     }
 
-    // Abrir modal de confirmación de eliminación
+    // Abrir modal de confirmacion de eliminacion
     public function openDeleteModal(int $taskId)
     {
         $task = Task::find($taskId);
@@ -107,7 +95,7 @@ class TaskList extends Component
         }
     }
 
-    // Cerrar modal de confirmación de eliminación
+    // Cerrar modal de confirmacion de eliminacion
     public function closeDeleteModal()
     {
         $this->showDeleteModal = false;
@@ -121,18 +109,16 @@ class TaskList extends Component
         if ($this->taskToDeleteId) {
             $task = Task::find($this->taskToDeleteId);
             if ($task) {
-                // Si la tarea a eliminar es la que está seleccionada para ver detalles, la deseleccionamos
                 if ($this->selectedTask && $this->selectedTask->id === $this->taskToDeleteId) {
                     $this->selectedTask = null;
                 }
                 $task->delete();
-                $this->loadTasks(); // Recargar la lista de tareas
             }
-            $this->closeDeleteModal(); // Cerrar el modal después de eliminar
+            $this->closeDeleteModal();
         }
     }
 
-    // Abrir modal de edición
+    // Abrir modal de edicion
     public function openEditModal(int $taskId)
     {
         $task = Task::find($taskId);
@@ -144,7 +130,7 @@ class TaskList extends Component
         }
     }
 
-    // Cerrar modal de edición
+    // Cerrar modal de edicion
     public function closeEditModal()
     {
         $this->showEditModal = false;
@@ -168,20 +154,37 @@ class TaskList extends Component
                 $task->description = $validatedData['editingTaskDescription'];
                 $task->save();
 
-                // Si la tarea editada es la que se está mostrando en detalles, actualiza los detalles
                 if ($this->selectedTask && $this->selectedTask->id === $this->editingTaskId) {
-                    $this->selectTask($this->editingTaskId); // Vuelve a cargarla para reflejar cambios
+                    $this->selectTask($this->editingTaskId);
                 }
 
-                $this->loadTasks();
                 $this->closeEditModal();
             }
         }
     }
 
-     // Devolver la vista del componente
+    // Establecer el filtro
+    public function setFilter(string $filter)
+    {
+        $this->filter = $filter;
+    }
+
+    // Renderiza el componente, obteniendo las tareas y pasandolas a la vista
     public function render()
     {
-        return view('livewire.task-list');
+        $tasksQuery = Task::with('category');
+
+        if ($this->filter === 'pending') {
+            $tasksQuery->where('is_completed', false);
+        } elseif ($this->filter === 'completed') {
+            $tasksQuery->where('is_completed', true);
+        }
+
+        $tasks = $tasksQuery->latest()->get();
+
+        return view('livewire.task-list', [
+            'tasks' => $tasks,
+            'categories' => $this->categories // Se pasan las categorias a la vista
+        ]);
     }
 }
