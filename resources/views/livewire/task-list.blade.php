@@ -1,9 +1,10 @@
 <div>
     <div class="grid grid-cols-1 md:grid-cols-3 md:gap-x-6">
+
         {{-- Columna Izquierda: Formulario, Filtros y Lista de Tareas --}}
         <div class="w-full md:col-span-2">
 
-            {{-- NUEVO: Formulario simplificado para añadir tarea --}}
+            {{-- Formulario añadir tarea --}}
             <form wire:submit.prevent="addTask" class="mb-6">
                 <div class="relative">
                     <input type="text" wire:model.defer="newTitle"
@@ -15,9 +16,8 @@
                 </div>
                 @error('newTitle') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
             </form>
-
-            {{-- Filtros y Barra de Búsqueda --}}
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
+
                 {{-- Filtros --}}
                 <div class="flex items-center space-x-4 border-b pb-2">
                     <button wire:click="setFilter('all')" class="text-sm font-medium {{ $filter === 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
@@ -30,7 +30,8 @@
                         Completadas
                     </button>
                 </div>
-                {{-- NUEVO: Barra de Búsqueda --}}
+
+                {{-- Barra de Búsqueda --}}
                 <div class="relative w-full sm:w-auto">
                      <input type="text"
                            class="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -47,7 +48,8 @@
                     @foreach ($tasks as $task)
                         <li wire:key="task-{{ $task->id }}" class="p-4 bg-white shadow rounded-lg flex justify-between items-center {{ $selectedTask && $selectedTask->id === $task->id ? 'ring-2 ring-blue-500' : '' }}">
                             <div class="flex items-center flex-grow">
-                                {{-- Checkbox para completar tarea --}}
+
+                                {{-- Checkbox e informacion de la tarea --}}
                                 <input type="checkbox"
                                        id="task-{{ $task->id }}"
                                        wire:click.stop="toggleTaskStatus({{ $task->id }})"
@@ -64,7 +66,8 @@
                                     @endif
                                 </div>
                             </div>
-                             {{-- NUEVO: Iconos de acciones --}}
+
+                             {{-- Iconos de acciones --}}
                             <div class="flex items-center ml-4 space-x-2">
                                 <button wire:click="selectTask({{ $task->id }})" class="text-gray-400 hover:text-gray-600">
                                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -75,6 +78,9 @@
                                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
                                     </button>
                                     <div x-show="open" x-transition class="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1" style="display: none;">
+                                        <button wire:click.stop="openCategoryModal({{ $task->id }})" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            Agregar categoría
+                                        </button>
                                         <button wire:click.stop="openEditModal({{ $task->id }})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                             Editar
                                         </button>
@@ -94,10 +100,13 @@
             @endif
         </div>
 
-        {{-- Columna Derecha: se mantiene igual por ahora --}}
+        {{-- Columna Derecha: Añadir y listar categorias, exportar y detalles de la tarea  --}}
         <div class="w-full md:col-span-1 mt-6 md:mt-0 space-y-6">
+
+            {{-- Componente para añadir y listar categorias --}}
             @livewire('category-manager')
 
+            {{-- Exportar --}}
             <div class="p-4 bg-white shadow rounded-lg">
                 <h3 class="text-lg font-semibold mb-3">Exportar</h3>
                 <div class="flex space-x-2">
@@ -231,6 +240,49 @@
                     {{-- Boton para cancelar cambios --}}
                     <button type="button" wire:click="closeEditModal" @click="showEditModalAlpine = false"
                             class="mt-3 w-full sm:mt-0 sm:w-auto inline-flex justify-center rounded-md border border-blue-600 shadow-sm px-4 py-2 bg-white text-base font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
+     {{-- Modal de Asignación de Categoría --}}
+    @if ($showCategoryModal)
+    <div x-data="{ showCategoryModalAlpine: @entangle('showCategoryModal') }"
+         x-show="showCategoryModalAlpine"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity flex items-center justify-center z-50 p-4"
+         style="display: none;"
+         @keydown.escape.window="showCategoryModalAlpine = false; $wire.closeCategoryModal()">
+        <div @click.away="showCategoryModalAlpine = false; $wire.closeCategoryModal()" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ $taskToCategorizeTitle }}</h3>
+            <p class="text-sm text-gray-600 mb-4">Selecciona una categoría para esta tarea.</p>
+            <form wire:submit.prevent="assignCategory">
+                <div>
+                    <label for="taskCategory" class="sr-only">Categoría</label>
+                    <select wire:model="selectedCategoryForTask" id="taskCategory"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        <option value="">Sin categoría</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('selectedCategoryForTask') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                </div>
+                <div class="mt-6 flex flex-col sm:flex-row-reverse sm:space-x-3 sm:space-x-reverse">
+                    <button type="submit"
+                            class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                        Guardar
+                    </button>
+                    <button type="button" wire:click="closeCategoryModal" @click="showCategoryModalAlpine = false"
+                            class="mt-3 w-full sm:mt-0 sm:w-auto inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
                         Cancelar
                     </button>
                 </div>

@@ -27,6 +27,12 @@ class TaskList extends Component
     public string $editingTaskTitle = '';
     public ?string $editingTaskDescription = '';
 
+    // --- NUEVO: Propiedades para el modal de asignar categoría ---
+    public bool $showCategoryModal = false;
+    public ?int $taskToCategorizeId = null;
+    public string $taskToCategorizeTitle = '';
+    public ?int $selectedCategoryForTask = null;
+
     // Propiedad para el filtro
     public string $filter = 'all';
 
@@ -158,6 +164,54 @@ class TaskList extends Component
 
                 $this->closeEditModal();
             }
+        }
+    }
+
+    
+    //Abre el modal para asignar una categoría a una tarea.
+    public function openCategoryModal(int $taskId)
+    {
+        $task = Task::find($taskId);
+        if ($task) {
+            $this->taskToCategorizeId = $task->id;
+            $this->taskToCategorizeTitle = $task->title;
+            $this->selectedCategoryForTask = $task->category_id; // Pre-selecciona la categoría actual
+            $this->showCategoryModal = true;
+        }
+    }
+
+    
+    // Cierra el modal de asignación de categoría.
+    
+    public function closeCategoryModal()
+    {
+        $this->showCategoryModal = false;
+        $this->taskToCategorizeId = null;
+        $this->taskToCategorizeTitle = '';
+        $this->selectedCategoryForTask = null;
+    }
+
+    
+    // Asigna la categoría seleccionada a la tarea.
+     
+    public function assignCategory()
+    {
+        $this->validate([
+            'selectedCategoryForTask' => 'nullable|integer|exists:categories,id'
+        ]);
+
+        if ($this->taskToCategorizeId) {
+            $task = Task::find($this->taskToCategorizeId);
+            if ($task) {
+                $task->category_id = $this->selectedCategoryForTask;
+                $task->save();
+
+                // Refresca los detalles si la tarea modificada estaba seleccionada
+                if ($this->selectedTask && $this->selectedTask->id === $this->taskToCategorizeId) {
+                    $this->selectTask($this->taskToCategorizeId);
+                }
+            }
+            $this->closeCategoryModal();
         }
     }
 
