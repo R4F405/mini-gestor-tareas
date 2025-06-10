@@ -27,11 +27,14 @@ class TaskList extends Component
     public string $editingTaskTitle = '';
     public ?string $editingTaskDescription = '';
 
-    // --- NUEVO: Propiedades para el modal de asignar categoría ---
+    // Propiedades para el modal de asignar categoría
     public bool $showCategoryModal = false;
     public ?int $taskToCategorizeId = null;
     public string $taskToCategorizeTitle = '';
     public ?int $selectedCategoryForTask = null;
+
+    // Propiedad para la búsqueda
+    public string $search = '';
 
     // Propiedad para el filtro
     public string $filter = 'all';
@@ -62,7 +65,6 @@ class TaskList extends Component
         $task->save();
 
         $this->reset('newTitle');
-
     }
 
     //Cambiar estado de la tarea
@@ -166,7 +168,6 @@ class TaskList extends Component
             }
         }
     }
-
     
     //Abre el modal para asignar una categoría a una tarea.
     public function openCategoryModal(int $taskId)
@@ -179,10 +180,8 @@ class TaskList extends Component
             $this->showCategoryModal = true;
         }
     }
-
     
     // Cierra el modal de asignación de categoría.
-    
     public function closeCategoryModal()
     {
         $this->showCategoryModal = false;
@@ -190,10 +189,8 @@ class TaskList extends Component
         $this->taskToCategorizeTitle = '';
         $this->selectedCategoryForTask = null;
     }
-
     
     // Asigna la categoría seleccionada a la tarea.
-     
     public function assignCategory()
     {
         $this->validate([
@@ -226,17 +223,23 @@ class TaskList extends Component
     {
         $tasksQuery = Task::with('category');
 
+        // Aplica el filtro de estado
         if ($this->filter === 'pending') {
             $tasksQuery->where('is_completed', false);
         } elseif ($this->filter === 'completed') {
             $tasksQuery->where('is_completed', true);
         }
 
+        // Aplica el filtro de búsqueda
+        if (!empty($this->search)) {
+            $tasksQuery->where('title', 'like', '%' . $this->search . '%');
+        }
+
         $tasks = $tasksQuery->latest()->get();
 
         return view('livewire.task-list', [
             'tasks' => $tasks,
-            'categories' => $this->categories // Se pasan las categorias a la vista
+            'categories' => $this->categories
         ]);
     }
 
