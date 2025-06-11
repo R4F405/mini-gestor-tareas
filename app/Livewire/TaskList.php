@@ -7,6 +7,7 @@ use Livewire\Component;
 use App\Models\Task;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TaskList extends Component
 {
@@ -241,6 +242,33 @@ class TaskList extends Component
             'tasks' => $tasks,
             'categories' => $this->categories
         ]);
+    }
+
+    // Exportar a PDF
+    public function exportPdf()
+    {
+        $tasksQuery = Task::with('category');
+
+        // Reutilizamos la misma lógica de filtrado que en el método render()
+        if ($this->filter === 'pending') {
+            $tasksQuery->where('is_completed', false);
+        } elseif ($this->filter === 'completed') {
+            $tasksQuery->where('is_completed', true);
+        }
+
+        if (!empty($this->search)) {
+            $tasksQuery->where('title', 'like', '%' . $this->search . '%');
+        }
+
+        $tasks = $tasksQuery->latest()->get();
+
+        // Generamos el PDF usando una vista específica para ello
+        $pdf = Pdf::loadView('pdf.tasks', ['tasks' => $tasks]);
+
+        // Devolvemos el PDF para que se descargue en el navegador
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->stream();
+        }, 'tasks-export.pdf');
     }
 
     // Evento para refrescar las categorias
