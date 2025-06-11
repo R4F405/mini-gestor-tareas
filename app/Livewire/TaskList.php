@@ -7,6 +7,8 @@ use Livewire\Component;
 use App\Models\Task;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
+use App\Exports\TasksExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class TaskList extends Component
@@ -242,6 +244,12 @@ class TaskList extends Component
             'tasks' => $tasks,
             'categories' => $this->categories
         ]);
+    }
+
+    // Exportar a CSV
+    public function exportCsv()
+    {
+        return Excel::download(new TasksExport($this->search, $this->filter), 'tasks-export.csv');
     }
 
     // Exportar a PDF
